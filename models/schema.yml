@@ -6,52 +6,70 @@ sources:
     tables:
       - name: sales
         identifier: raw_gz_sales
-        description: sales data for greenweez company
+        description: Greenweez'in satışları / her orders_id'de bulunan bir product_id için bir satırımız var
+        loaded_at_field: "CAST(date_date AS TIMESTAMP)"
+        freshness:
+          warn_after:
+            count: 90
+            period: day
+          error_after:
+            count: 10000
+            period: day
         columns:
           - name: date_date
-            description: date of the order
+            description: satın alma tarihi
             tests:
               - not_null
           - name: orders_id
+            description: foreign key to ship
             tests:
               - not_null
-          - name: ptd_id
+          - name: pdt_id
+            description: foreign key to product
             tests:
               - not_null
           - name: revenue
+            description: Müşterinin ürünü satın almak için ödediği tutar. gelir = miktar * satış_fiyatı
             tests:
               - not_null      
           - name: quantity
+            description: belirli bir sipariş için satın alınan ürün miktarı
             tests:
               - not_null
+        tests:
+          - dbt_utils.unique_combination_of_columns:
+               combination_of_columns:
+                 - orders_id
+                 - pdt_id
 
       - name: product
         identifier: raw_gz_product
-        description: product data for greenweez company
+        description: products of Greenweez
         columns:
-          - name: product_id
+          - name: products_id
+            description: Birincil anahtar
             tests:
+              - unique
               - not_null
-          - name: product_name
-            tests:
-              - not_null
-          - name: category
-            tests:
-              - not_null
+          - name: purchase_price
+            description: ürünün satın alma fiyatı
 
       - name: ship
         identifier: raw_gz_ship
-        description: shipping data for greenweez company
+        description: Greenweez siparişleri için nakliye verileri
         columns:
-          - name: order_id
+          - name: orders_id
+            description: birincil anahtar
             tests:
+              - unique
               - not_null
-          - name: ship_date
-            tests:
-              - not_null
-          - name: ship_mode
-            tests:
-              - not_null
+          - name: shipping_fee
+            description: müşterinin nakliye için ödediği fiyat
+          - name: log_cost
+            description: dağıtım merkezi/depodaki paketin hazırlanma maliyeti
+          - name: ship_cost
+            description: Greenweez tarafından nakliye şirketine/lojistik sağlayıcısına ödenen nakliye ücreti
+
 
 
 
