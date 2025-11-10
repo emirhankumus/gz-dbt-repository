@@ -70,7 +70,135 @@ sources:
           - name: ship_cost
             description: Greenweez tarafından nakliye şirketine/lojistik sağlayıcısına ödenen nakliye ücreti
 
+# ====== Yeni Reklam Kampanyası Kaynakları ======
+      - name: adwords
+        identifier: raw_gz_adwords
+
+# ===== Bing için reklam kampanyası kaynakları =======
+      - name: bing
+        identifier: raw_gz_bing
+
+# ===== Criteo için reklam kampanyası kaynakları =======
+      - name: criteo
+        identifier: raw_gz_criteo
+
+# ===== Facebook için reklam kampanyası kaynakları =======
+      - name: facebook
+        identifier: raw_gz_facebook
+        
+models:
+  - name: int_campaigns
+    description: |
+      Tüm reklam kaynaklarından (Adwords, Bing, Criteo, Facebook) gelen verilerin birleştirildiği ara kampanya modeli.
+      Bu model, sonraki günlük ve mart modelleri için temel veri sağlar.
+    columns:
+      - name: date_date
+        description: Reklam verisinin tarihi
+        tests:
+          - not_null
+      - name: paid_source
+        description: Reklamın yayınlandığı platform (Adwords, Bing, Criteo, Facebook)
+        tests:
+          - not_null
+      - name: campaign_key
+        description: Kampanyayı benzersiz şekilde tanımlayan anahtar
+        tests:
+          - not_null
+      - name: campaign_name
+        description: Kampanya adı
+        tests:
+          - not_null
+      - name: ads_cost
+        description: Reklam maliyeti
+        tests:
+          - not_null
+      - name: impression
+        description: Reklamın gösterim sayısı
+        tests:
+          - not_null
+      - name: click
+        description: Reklamın tıklanma sayısı
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - campaign_key
+            - date_date
+            - paid_source
+
+  - name: int_campaigns_day
+    description: |
+      Günlük bazda int_campaigns modelinden alınan toplu veri.
+      Tarihe göre ters kronolojik sıralanmıştır.
+    columns:
+      - name: date_date
+        description: Reklam verisinin tarihi
+        tests:
+          - not_null
+      - name: paid_source
+        description: Reklamın yayınlandığı platform (Adwords, Bing, Criteo, Facebook)
+        tests:
+          - not_null
+      - name: campaign_key
+        description: Kampanyayı benzersiz şekilde tanımlayan anahtar
+        tests:
+          - not_null
+      - name: campaign_name
+        description: Kampanya adı
+        tests:
+          - not_null
+      - name: ads_cost
+        description: Reklam maliyeti
+        tests:
+          - not_null
+      - name: impression
+        description: Reklamın gösterim sayısı
+        tests:
+          - not_null
+      - name: click
+        description: Reklamın tıklanma sayısı
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - campaign_key
+            - date_date
+            - paid_source
 
 
-
-
+  - name: finance_campaigns_day
+    description: Günlük bazda finans ve reklam verileri
+    columns:
+      - name: ads_margin
+        description: operational_margin - ads_cost
+        
+      - name: average_basket
+        description: Her gün için ortalama sepet tutarı
+        tests:
+          - not_null
+      - name: date
+        description: İşlem tarihi
+      - name: operational_margin
+        description: Operasyonel marj
+      - name: ads_cost
+        description: Reklam maliyeti
+      - name: ads_impression
+        description: Reklam gösterimleri
+      - name: ads_clicks
+        description: Reklam tıklamaları
+      - name: quantity
+        description: Satılan toplam ürün miktarı
+      - name: revenue
+        description: Toplam gelir
+      - name: purchase_cost
+        description: Toplam satın alma maliyeti
+      - name: margin
+        description: Toplam marj
+      - name: shipping_fee
+        description: Nakliye ücreti
+      - name: log_cost
+        description: Lojistik maliyeti
+      - name: ship_cost
+        description: Nakliye maliyeti
